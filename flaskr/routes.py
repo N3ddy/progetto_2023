@@ -1,6 +1,6 @@
 # Preparazione Lezione 5
 from flask import render_template, url_for, redirect, flash
-from myflaskblog import app, db, bcrypt
+from flaskr import app, db, bcrypt
 #from myflaskblog.forms import RegistrationForm, LoginForm
 #from myflaskblog.models import User
 from flask_login import login_user, logout_user, current_user, login_required

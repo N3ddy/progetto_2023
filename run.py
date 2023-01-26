@@ -4,11 +4,11 @@
 # Preparazione per la creazione dell'applicazione Flask
 from flask import Flask, render_template, redirect, url_for, flash
 from flask_login import login_user, logout_user, current_user, login_required
-from myflaskblog import db, bcrypt
-from myflaskblog.forms import RegistrationForm, LoginForm, AccountForm
-from myflaskblog.models import User
+from flaskr import db, bcrypt
+from flaskr.forms import RegistrationForm, LoginForm, AccountForm
+from flaskr.models import User
 
-app = Flask(__name__, template_folder= r'C:\\Users\\vitto\\Documents\\progetto_2023\\myflaskblog\\templates', static_folder=r'C:\\Users\\vitto\\Documents\\progetto_2023\\myflaskblog\\static')
+app = Flask(__name__, template_folder= r'flaskr//templates', static_folder=r'flaskr//static')
 app.config['SECRET_KEY'] = 'mysecretkey'
 
 # route per la home page e la pagina "About"

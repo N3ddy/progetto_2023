@@ -1,5 +1,5 @@
 from datetime import datetime
-from myflaskblog import db, login_manager
+from flaskr import db, login_manager
 from flask_login import UserMixin
 
 # caricamento dell'utente corrente per il login
