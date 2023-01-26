@@ -21,7 +21,6 @@ def about():
 @app.route("/login/", methods=['POST', 'GET'])
 def login():
     form = LoginForm()
-
     if form.validate_on_submit():
         user = User.query.filter_by(email=form.email.data).first()
         candidate = form.password.data
@@ -29,7 +28,6 @@ def login():
             login_user(user, remember=form.remember_me.data)
             flash('Benvenuto', category='success')
             return redirect('/home/')
-
         else:
             flash('Email o password sbagliate', category='danger')
             return redirect('/login/')
