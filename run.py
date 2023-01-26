@@ -1,15 +1,11 @@
-
-#app = Flask(__name__, template_folder= r'C:\\Users\\vitto\\Documents\\progetto_2023\\myflaskblog\\templates', static_folder=r'C:\\Users\\vitto\\Documents\\progetto_2023\\myflaskblog\\static')
- 
 # Preparazione per la creazione dell'applicazione Flask
 from flask import Flask, render_template, redirect, url_for, flash
 from flask_login import login_user, logout_user, current_user, login_required
 from flaskr import db, bcrypt
 from flaskr.forms import RegistrationForm, LoginForm, AccountForm
 from flaskr.models import User
+from flaskr import app
 
-app = Flask(__name__, template_folder= r'flaskr//templates', static_folder=r'flaskr//static')
-app.config['SECRET_KEY'] = 'mysecretkey'
 
 # route per la home page e la pagina "About"
 @app.route("/")
@@ -72,4 +68,7 @@ def coming_soon():
     return render_template("game.html", title="Coming Soon!")
 
 if __name__ == '__main__':
+    # Creazione delle tabelle
+    with app.app_context():
+        db.create_all()
     app.run(debug=True)

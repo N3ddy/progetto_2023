@@ -2,6 +2,7 @@ from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 from flask_bcrypt import Bcrypt
 from flask_login import LoginManager
+from flaskr import routes
 
 # creazione dell'app flask e configurazione delle relative opzioni
 app = Flask(__name__)
@@ -15,7 +16,3 @@ db = SQLAlchemy(app)
 bcrypt = Bcrypt(app)
 login_manager = LoginManager()
 login_manager.init_app(app)
-
-# Creazione delle tabelle
-with app.app_context():
-    db.create_all()
