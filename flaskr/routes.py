@@ -1,10 +1,12 @@
-# Preparazione Lezione 5
 from flask import render_template, url_for, redirect, flash
-#from myflaskblog.forms import RegistrationForm, LoginForm
-#from myflaskblog.models import User
+from flaskr.forms import RegistrationForm, LoginForm
+from flaskr.models import User
+from flaskr import db, bcrypt
+from flaskr import app
 from flask_login import login_user, logout_user, current_user, login_required
 
-"""# route per la home page e la pagina "About"
+
+# route per la home page e la pagina "About"
 @app.route("/")
 @app.route("/home/")
 def home():
@@ -18,7 +20,6 @@ def about():
 @app.route("/login/", methods=['POST', 'GET'])
 def login():
     form = LoginForm()
-
     if form.validate_on_submit():
         user = User.query.filter_by(email=form.email.data).first()
         candidate = form.password.data
@@ -26,7 +27,6 @@ def login():
             login_user(user, remember=form.remember_me.data)
             flash('Benvenuto', category='success')
             return redirect('/home/')
-
         else:
             flash('Email o password sbagliate', category='danger')
             return redirect('/login/')
@@ -62,5 +62,4 @@ def account():
 # route per la pagina game
 @app.route("/game/")
 def coming_soon():
-    return render_template("game.html", title="Coming Soon!")"""
-
+    return render_template("game.html", title="Coming Soon!")

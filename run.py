@@ -1,13 +1,10 @@
 # Preparazione per la creazione dell'applicazione Flask
-from flask import Flask, render_template, redirect, url_for, flash
-from flask_login import login_user, logout_user, current_user, login_required
-from flaskr import db, bcrypt
-from flaskr.forms import RegistrationForm, LoginForm, AccountForm
-from flaskr.models import User
-from flaskr import app
+from flaskr import db
+from flaskr.routes import app
 
 
-# route per la home page e la pagina "About"
+
+"""# route per la home page e la pagina "About"
 @app.route("/")
 @app.route("/home/")
 def home():
@@ -63,7 +60,7 @@ def account():
 # route per la pagina game
 @app.route("/game/")
 def coming_soon():
-    return render_template("game.html", title="Coming Soon!")
+    return render_template("game.html", title="Coming Soon!")"""
 
 if __name__ == '__main__':
     # Creazione delle tabelle

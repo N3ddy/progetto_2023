@@ -2,7 +2,6 @@ from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 from flask_bcrypt import Bcrypt
 from flask_login import LoginManager
-from flaskr import routes
 
 # creazione dell'app flask e configurazione delle relative opzioni
 app = Flask(__name__)
