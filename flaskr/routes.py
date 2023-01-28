@@ -1,9 +1,24 @@
-from flask import render_template, url_for, redirect, flash
+from flask import render_template, url_for, redirect, flash, session
 from flaskr.forms import RegistrationForm, LoginForm
 from flaskr.models import User
 from flaskr import db, bcrypt
-from flaskr import app
+from flaskr import app, socketio
 from flask_login import login_user, logout_user, current_user, login_required
+from flask_socketio import join_room, send
+
+
+# controllo dell evento nel socket
+@socketio.on('change_color')
+def test(color):
+    send(color, broadcast=True)
+
+
+@socketio.on('join')
+def on_join(data):
+    username = data['username']
+    room = data['room']
+    join_room(room)
+    send(username + ' has entered the room.')
 
 
 # route per la home page e la pagina "About"
@@ -32,6 +47,8 @@ def login():
             return redirect('/login/')
     else:
         return render_template("login.html", title="Login Page", form=form)
+
+
 # route per la pagina di registrazione
 @app.route("/register/", methods=['POST', 'GET'])
 def register():
@@ -58,6 +75,14 @@ def register():
 @login_required
 def account():
     return render_template("account.html", title="Pagina dell'Account", p_bucks=current_user.p_bucks)
+
+# route per la pagina dell'account
+@app.route("/logout/")
+@login_required
+def log_out_user():
+    logout_user()
+    return render_template("home.html", title="Home Page")
+
 
 # route per la pagina game
 @app.route("/game/")

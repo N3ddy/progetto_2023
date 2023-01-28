@@ -1,8 +1,12 @@
 <!DOCTYPE html>
 <html>
 <head>
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.1/jquery.min.js"></script>
+	<!--Socketio-->
+	<script src="https://cdn.socket.io/4.4.1/socket.io.min.js" integrity="sha384-fKnu0iswBIqkjxrhQCTZ7qlLHOFEgNkRmK2vaO/LbTZSXdJfAu6ewRBdwHPhBo/H" crossorigin="anonymous"></script>
 	<title>Poker Online - Coming Soon</title>
 	<link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='main.css') }}">
+	<script src="{{ url_for('static', filename='main.js') }}"></script>
 </head>
 <body>
 	<header class="upper_bar">
@@ -18,8 +22,10 @@
 		</nav>
 	</header>
 	<main>
-		<div class="coming-soon">
+		<div class="coming-soon", id="containGame">
 			<h2>Coming Soon!</h2>
+			<button type="button" id="start">change the color to red </button>
+			<button type="button" id="finish">change the coor the yellow</button>
 		</div>
 	</main>
     <footer>
