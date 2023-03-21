@@ -4,21 +4,48 @@ from flaskr.models import User
 from flaskr import db, bcrypt
 from flaskr import app, socketio
 from flask_login import login_user, logout_user, current_user, login_required
-from flask_socketio import join_room, send
+from flask_socketio import join_room, send, rooms
+
+
+active_rooms = {}
 
 
 # controllo dell evento nel socket
 @socketio.on('change_color')
 def test(color):
-    send(color, broadcast=True)
+    print(rooms(), flush=True)
+    send(color, to=active_rooms[current_user.username])
 
 
 @socketio.on('join')
 def on_join(data):
-    username = data['username']
-    room = data['room']
+    username = current_user.username
+    room = username + "_" + data['room']
+    active_rooms[username] = room
     join_room(room)
-    send(username + ' has entered the room.')
+    print("created room " + room, flush=True)
+    send(username + ' has entered the room: ' + room, to=room)
+    socketio.emit("load_avaiable_rooms", active_rooms, broadcast=True)
+
+
+@socketio.on('enter_existing_room')
+def on_enter_existing_room(data):
+    username = current_user.username
+    room = active_rooms[data["username"]]
+    join_room(room)
+    
+    active_rooms[username] = room #to revise it
+    print("entered room " + room, flush=True)
+    
+    send(username + ' has entered the room: ' + room, to=room)
+    socketio.emit("load_avaiable_rooms", active_rooms, broadcast=True)
+
+#send the avaiable room when a new user enter the page
+@socketio.on("startInfo")
+def connect():
+    socketio.emit("setup", active_rooms)
+
+
 
 
 # route per la home page e la pagina "About"
@@ -86,5 +113,6 @@ def log_out_user():
 
 # route per la pagina game
 @app.route("/game/")
+@login_required
 def coming_soon():
-    return render_template("game.html", title="Coming Soon!")
+    return render_template("game.html", title="Coming Soon!", username=current_user.username)

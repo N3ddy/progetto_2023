@@ -9,4 +9,4 @@ if __name__ == '__main__':
     # Creazione delle tabelle
     with app.app_context():
         db.create_all()
-    socketio.run(app, debug=True) #, port=5000, host='192.168.64.154')#
+    socketio.run(app, port=5000, host='192.168.200.154')# 
