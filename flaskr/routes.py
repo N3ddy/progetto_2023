@@ -4,7 +4,7 @@ from flaskr.models import User
 from flaskr import db, bcrypt
 from flaskr import app, socketio
 from flask_login import login_user, logout_user, current_user, login_required
-from flask_socketio import join_room, send, rooms
+from flask_socketio import join_room, send, rooms, leave_room
 
 
 active_rooms = {}
@@ -12,41 +12,60 @@ active_rooms = {}
 
 # controllo dell evento nel socket
 @socketio.on('change_color')
-def test(color):
-    print(rooms(), flush=True)
-    send(color, to=active_rooms[current_user.username])
+def test(data):
+    print(data["current_room"], flush=True)
+    print(rooms())
+    print("\n\n\n", flush=True)
+    socketio.emit("color", data["color"], to=data["current_room"])
 
-
+#create a new room
 @socketio.on('join')
 def on_join(data):
-    username = current_user.username
-    room = username + "_" + data['room']
-    active_rooms[username] = room
+    username = current_user.username  
+    room = username + "_" + data['room']  #create the room based on the username
+    active_rooms[room] = username + ","
+    #TODO delete the room from active rooms
+    for room_name in rooms():
+        leave_room(room_name)
+        
     join_room(room)
-    print("created room " + room, flush=True)
+    
     send(username + ' has entered the room: ' + room, to=room)
     socketio.emit("load_avaiable_rooms", active_rooms, broadcast=True)
+    socketio.emit("send_current_room", room, to=room)
 
-
+#enter an existing room
 @socketio.on('enter_existing_room')
 def on_enter_existing_room(data):
     username = current_user.username
-    room = active_rooms[data["username"]]
+    room = data["room"]
+    for room_name in rooms():
+        leave_room(room_name)
     join_room(room)
-    
-    active_rooms[username] = room #to revise it
+    active_rooms[room] += "," + username 
     print("entered room " + room, flush=True)
     
     send(username + ' has entered the room: ' + room, to=room)
-    socketio.emit("load_avaiable_rooms", active_rooms, broadcast=True)
+    socketio.emit("send_current_room", room, to=room)
+
 
 #send the avaiable room when a new user enter the page
 @socketio.on("startInfo")
 def connect():
     socketio.emit("setup", active_rooms)
 
-
-
+@socketio.on("leave_room")
+def leave_current_room(data):
+    rooms_to_eliminate = []
+    for room_name, users in active_rooms.items():
+        if current_user.username in users: #if user is inside the room he leve it
+            leave_room(data["room"])
+            active_rooms[room_name] = active_rooms[room_name].replace(current_user.username + ",", "")
+            if active_rooms[room_name] == "":  #then i delete the room from active_rooms variable
+                rooms_to_eliminate.append(room_name)
+    for room_name in rooms_to_eliminate:  #eliminate every single empty room
+        active_rooms.pop(room_name)
+    socketio.emit("load_avaiable_rooms", active_rooms, broadcast=True) #load all room for all users
 
 # route per la home page e la pagina "About"
 @app.route("/")

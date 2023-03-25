@@ -1,6 +1,8 @@
 playing = true
 $(document).ready(function(){
     
+    $("#exit_room").hide();
+    $("#start_game").hide();
     /**
      * function create when the user open the game page
      * It creates the socket for the communication
@@ -12,14 +14,18 @@ $(document).ready(function(){
     });
     
     
-
-    socket.on("message", function(msg) {
+    /**
+     * after testing delete this
+     */
+    socket.on("color", function(msg) {
         if(msg == "red"){
+            console.log("test_red")
             $("#containGame").css("background-color", "red")
         }else if(msg == "yellow"){
             $("#containGame").css("background-color", "yellow")
         }
     });
+
 
     /**
      * function called when we want to update the avaiable room
@@ -27,12 +33,11 @@ $(document).ready(function(){
     socket.on("load_avaiable_rooms", function(data) {
         $('#avaiableRooms').empty();
         Object.keys(data).forEach(key => {
-            var room_button = $('<input type="button" value=' + data[key] + '"/>')
+            var room_button = $('<input type="button" value=' + key + '"/>')
             .attr('class', 'enter_room')
             .attr('id', key)
             .click(f => {
-                console.log("test funziona");
-                socket.emit('enter_existing_room',{"room": "room", "username":key});
+                socket.emit('enter_existing_room',{"room": key, "username":"username"});
             });
             room_button.appendTo($("#avaiableRooms"));
         });
@@ -44,29 +49,54 @@ $(document).ready(function(){
     socket.on("setup", function(data) {
         $('#avaiableRooms').empty();
         Object.keys(data).forEach(key => {
-            var room_button = $('<input type="button" value=' + data[key] + '"/>')
+            var room_button = $('<input type="button" value=' + key + '"/>')
             .attr('class', 'enter_room')
             .attr('id', key)
             .click(f => {
-                console.log("test funziona");
-                socket.emit('enter_existing_room',{"room": "room", "username":key});
+                socket.emit('enter_existing_room', {"room": key, "username":"username"});
             });
             room_button.appendTo($("#avaiableRooms"));
         });
     });
 
+    /**
+     * function used to save the current room for the user
+     */
+    socket.on("send_current_room", function(data) {
+        localStorage.setItem("current_room", data)
+        $('#create_room').hide();
+        $("#exit_room").show();
+    });
+
+
     $('#start').click(function(){
-        socket.emit("change_color", "red") 
+        socket.emit("change_color", {"color":"red", "current_room": localStorage.getItem("current_room")}) 
     });
 
     $('#finish').click(function(){
-        socket.emit("change_color", "yellow") 
+        socket.emit("change_color", {"color":"yellow", "current_room": localStorage.getItem("current_room")}) 
     });
     
-    $('#match').click(match_room)
-    //$(document).on('click', '.enter_room', enter_room);
+    /**
+     * function called when we want to create a new room
+     */
+    $('#create_room').click(function(){
+        socket.emit('join', {"room": "room", "username":"username"});
+        $('#start_game').show();
+    });
 
-    function match_room(){
+    /**
+     * function called when the user want to exit the current room
+     */
+    $('#exit_room').click(function(){
+        console.log("exit_room")
+        socket.emit('leave_room', {"room": localStorage.getItem("current_room")}); 
+        $('#create_room').show();
+        $("#exit_room").hide();
+        $('#start_game').hide();
+    });
+
+    /*function match_room(){
         socket.emit('join',{"room": "room", "username":"username"});
-    };
+    };*/
 })
