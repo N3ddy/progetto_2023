@@ -38,6 +38,7 @@ $(document).ready(function(){
             .attr('id', key)
             .click(f => {
                 socket.emit('enter_existing_room',{"room": key, "username":"username"});
+                $('#avaiableRooms').hide();
             });
             room_button.appendTo($("#avaiableRooms"));
         });
@@ -54,6 +55,7 @@ $(document).ready(function(){
             .attr('id', key)
             .click(f => {
                 socket.emit('enter_existing_room', {"room": key, "username":"username"});
+                $('#avaiableRooms').hide();
             });
             room_button.appendTo($("#avaiableRooms"));
         });
@@ -68,7 +70,13 @@ $(document).ready(function(){
         $("#exit_room").show();
     });
 
-
+    /**
+     * when the first player start the game every user will generate the new page
+     */
+    socket.on("load_game_page", function(data) {
+        $("header").load("/info/");
+    });
+    
     $('#start').click(function(){
         socket.emit("change_color", {"color":"red", "current_room": localStorage.getItem("current_room")}) 
     });
@@ -82,6 +90,7 @@ $(document).ready(function(){
      */
     $('#create_room').click(function(){
         socket.emit('join', {"room": "room", "username":"username"});
+        $('#avaiableRooms').hide();
         $('#start_game').show();
     });
 
@@ -92,9 +101,15 @@ $(document).ready(function(){
         console.log("exit_room")
         socket.emit('leave_room', {"room": localStorage.getItem("current_room")}); 
         $('#create_room').show();
+        $('#avaiableRooms').show();
         $("#exit_room").hide();
         $('#start_game').hide();
     });
+    
+    $("#start_game").click(function() {
+        socket.emit("start_game", {"room": localStorage.getItem("current_room")})
+    });
+
 
     /*function match_room(){
         socket.emit('join',{"room": "room", "username":"username"});

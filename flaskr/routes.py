@@ -18,6 +18,11 @@ def test(data):
     print("\n\n\n", flush=True)
     socketio.emit("color", data["color"], to=data["current_room"])
 
+#send the avaiable room when a new user enter the page
+@socketio.on("startInfo")
+def connect():
+    socketio.emit("setup", active_rooms)
+
 #create a new room
 @socketio.on('join')
 def on_join(data):
@@ -48,14 +53,8 @@ def on_enter_existing_room(data):
     send(username + ' has entered the room: ' + room, to=room)
     socketio.emit("send_current_room", room, to=room)
 
-
-#send the avaiable room when a new user enter the page
-@socketio.on("startInfo")
-def connect():
-    socketio.emit("setup", active_rooms)
-
 @socketio.on("leave_room")
-def leave_current_room(data):
+def on_leave_current_room(data):
     rooms_to_eliminate = []
     for room_name, users in active_rooms.items():
         if current_user.username in users: #if user is inside the room he leve it
@@ -66,6 +65,12 @@ def leave_current_room(data):
     for room_name in rooms_to_eliminate:  #eliminate every single empty room
         active_rooms.pop(room_name)
     socketio.emit("load_avaiable_rooms", active_rooms, broadcast=True) #load all room for all users
+
+
+@socketio.on("start_game") #start the game for all user in the room
+def on_start_game(data):
+    socketio.emit("load_game_page", to=data["room"]) #tell all user in the room to load the new page
+
 
 # route per la home page e la pagina "About"
 @app.route("/")
