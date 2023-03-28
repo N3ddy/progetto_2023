@@ -139,4 +139,11 @@ def log_out_user():
 @app.route("/game/")
 @login_required
 def coming_soon():
-    return render_template("game.html", title="Coming Soon!", username=current_user.username)
+    return render_template("room_selection.html", title="Coming Soon!", username=current_user.username)
+
+
+# route per la pagina game
+@app.route("/game_page/")
+@login_required
+def page_game():
+    return render_template("game_page.html", title="game", username=current_user.username)

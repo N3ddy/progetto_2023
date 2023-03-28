@@ -74,7 +74,7 @@ $(document).ready(function(){
      * when the first player start the game every user will generate the new page
      */
     socket.on("load_game_page", function(data) {
-        $("header").load("/info/");
+        $("body").load("/game_page/");
     });
     
     $('#start').click(function(){
