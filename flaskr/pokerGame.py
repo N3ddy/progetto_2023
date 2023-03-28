@@ -1,34 +1,41 @@
 import random
+from flaskr.Deck import Deck
+from flaskr.Player import Player
+
 
 class PokerGame:
-    def __init__(self, players, starting_chips=1000):
+    def __init__(self, number_of_players):
         self.deck = Deck()
         self.pot = 0
-        self.players = players
+        self.players = list()
+        for single_player in range(number_of_players):
+            self.players.append(Player())
+        self.table_cards = list()
         self.current_bet = 0
         self.minimum_bet = 10
-        self.community_cards = []
         self.active_players = []
         self.inactive_players = []
         self.current_player = None
-        self.dealer_position = 0
-        self.starting_chips = starting_chips
         self.round_count = 0
         
     def start_game(self):
+        self.put_table_card()
         self.deal_cards()
-        self.current_player = self.players[self.dealer_position]
+        
+        self.current_player = self.players[0]
         self.active_players = self.players.copy()
         self.inactive_players = []
         self.round_count = 0
-        self.place_small_blind()
-        self.place_big_blind()
-        self.current_bet = self.minimum_bet * 2
-        self.ask_players_for_action()
+        #self.ask_players_for_action()
 
     def deal_cards(self):
-        for player in self.players:
-            player.hand = [self.deck.draw_card(), self.deck.draw_card()]
+        #for player in self.players:
+        for index in range(len(self.players)):
+            self.players[index].hand = [self.deck.pick_cards(5)]
+            print(self.players[index].hand, flush=True)
+
+    def put_table_card(self):
+        self.table_cards = self.deck.pick_cards(5)
 
     def place_small_blind(self):
         small_blind_player = self.players[(self.dealer_position + 1) % len(self.players)]

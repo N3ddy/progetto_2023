@@ -3,6 +3,7 @@ $(document).ready(function(){
     
     $("#exit_room").hide();
     $("#start_game").hide();
+    $("give_cards").hide();
     /**
      * function create when the user open the game page
      * It creates the socket for the communication
@@ -21,7 +22,9 @@ $(document).ready(function(){
         if(msg == "red"){
             console.log("test_red")
             $("#containGame").css("background-color", "red")
+
         }else if(msg == "yellow"){
+            console.log("test_yellow")
             $("#containGame").css("background-color", "yellow")
         }
     });
@@ -74,16 +77,91 @@ $(document).ready(function(){
      * when the first player start the game every user will generate the new page
      */
     socket.on("load_game_page", function(data) {
-        $("body").load("/game_page/");
+        $("body").load("/game_page/", function(){
+            socket.emit("give_cards", data);   //emit the request to get the cards
+        });
     });
     
-    $('#start').click(function(){
+    /**
+     * when the card are getted i show them in the browser
+     */
+    socket.on("show_cards", function(data) {
+        data[0].forEach(elem => {
+            var symbol = "&clubs;"
+            console.log(elem[elem.length - 1])
+            switch(elem[elem.length - 1]){
+                case "C":
+                    symbol = "&clubs;"
+                    break
+                case "H":
+                    symbol = "&hearts;"
+                    break
+                case "S":
+                    symbol = "&spades;"
+                    break
+                case "D":  
+                    symbol = "&diams;"
+                    break
+                default:
+                    symbol = "&hearts;" 
+                    break 
+            }
+            number = elem.substring(0, elem.length-1)
+            $("#player_hand").append("<div class='card-small'><p class='card-text black'>"+ number +"</p><p class='card-img black'>"+ symbol +"</p></div>")
+        });
+    });
+
+
+    /**
+     * when the table card are getted i show them in the browser
+     */
+    socket.on("show_table_cards", function(data) {
+        console.log(data)
+        data.forEach(elem => {
+            var symbol = "&clubs;"
+            console.log(elem[elem.length - 1])
+            switch(elem[elem.length - 1]){
+                case "C":
+                    symbol = "&clubs;"
+                    break
+                case "H":
+                    symbol = "&hearts;"
+                    break
+                case "S":
+                    symbol = "&spades;"
+                    break
+                case "D":  
+                    symbol = "&diams;"
+                    break
+                default:
+                    symbol = "&hearts;" 
+                    break 
+            }
+            number = elem.substring(0, elem.length-1)
+            $(".board").append("<div class='card-small'><p class='card-text black'>"+ number +"</p><p class='card-img black'>"+ symbol +"</p></div>")
+        });
+    });
+
+
+
+    /**
+     * set the turn for each player
+     */
+    socket.on("give_turn", function(data) {
+        console.log(data);
+        localStorage.setItem("your_turn", data[0]);
+        localStorage.setItem("current_money", data[1]);
+    });
+
+
+
+    /*$('#start').click(function(){
         socket.emit("change_color", {"color":"red", "current_room": localStorage.getItem("current_room")}) 
     });
 
     $('#finish').click(function(){
         socket.emit("change_color", {"color":"yellow", "current_room": localStorage.getItem("current_room")}) 
-    });
+    });*/
     
     /**
      * function called when we want to create a new room
@@ -109,6 +187,17 @@ $(document).ready(function(){
     $("#start_game").click(function() {
         socket.emit("start_game", {"room": localStorage.getItem("current_room")})
     });
+
+
+    $("#bet").click(function() {
+        console.log("bet")
+    });
+
+    $("#leave").click(function() {
+        console.log("bet")
+    });
+
+
 
 
     /*function match_room(){

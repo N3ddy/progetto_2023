@@ -1,3 +1,5 @@
+import random
+
 class Deck:
     def __init__(self):
         cards = list()
@@ -9,7 +11,7 @@ class Deck:
         # mescolare le carte
         random.shuffle(self.cards)
         
-    def pick_cards(self, n_cards = 2):
+    def pick_cards(self, n_cards = 5):
         picked_cards = list()
         for index in range(n_cards):
             picked_cards.append(self.cards.pop(0))

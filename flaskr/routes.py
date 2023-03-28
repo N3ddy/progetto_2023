@@ -5,10 +5,11 @@ from flaskr import db, bcrypt
 from flaskr import app, socketio
 from flask_login import login_user, logout_user, current_user, login_required
 from flask_socketio import join_room, send, rooms, leave_room
-
+from flaskr.pokerGame import PokerGame
 
 active_rooms = {}
-
+active_players = {}
+poker_games = {}
 
 # controllo dell evento nel socket
 @socketio.on('change_color')
@@ -35,6 +36,10 @@ def on_join(data):
         
     join_room(room)
     
+    user_room = current_user.username
+    active_players[current_user.username] = current_user.username
+    join_room(user_room)
+    
     send(username + ' has entered the room: ' + room, to=room)
     socketio.emit("load_avaiable_rooms", active_rooms, broadcast=True)
     socketio.emit("send_current_room", room, to=room)
@@ -47,6 +52,11 @@ def on_enter_existing_room(data):
     for room_name in rooms():
         leave_room(room_name)
     join_room(room)
+    
+    user_room = current_user.username
+    active_players[current_user.username] = current_user.username
+    join_room(user_room)
+    
     active_rooms[room] += "," + username 
     print("entered room " + room, flush=True)
     
@@ -70,6 +80,49 @@ def on_leave_current_room(data):
 @socketio.on("start_game") #start the game for all user in the room
 def on_start_game(data):
     socketio.emit("load_game_page", to=data["room"]) #tell all user in the room to load the new page
+    number_of_players = len(active_rooms[data["room"]].split(",")) - 1
+    poker_games[current_user.username] = PokerGame(number_of_players) #create the poker game for n player
+    poker_games[current_user.username].start_game()
+    
+    """curr_room = current_user.username + "_room"
+    players = active_rooms[curr_room].split(",")
+    index = 0
+    print(players, flush=True)
+    
+    for single_player in players:
+        if single_player != "":
+            print("\n\n\n", flush=True)
+            print(single_player, flush=True)
+            print(rooms())
+            print("\n\n\n", flush=True)
+            #poker_games[current_user.username].players[index].hand
+            #socketio.emit("show_cards_button",current_user.username,  to=single_player)
+            break"""
+        
+
+@socketio.on("give_cards") #give the cards for all users in the room
+def on_give_cards(data):
+    
+    curr_room = current_user.username + "_room"
+    players = active_rooms[curr_room].split(",")
+    index = 0
+    
+    socketio.emit("show_table_cards", poker_games[current_user.username].table_cards, to=curr_room)
+    
+    for single_player in players:
+        if single_player != "":
+            print(single_player, flush=True)
+            print(rooms())
+            print("\n\n\n", flush=True)
+            print(poker_games[current_user.username].players[index].hand, flush=True)
+            socketio.emit("show_cards",  poker_games[current_user.username].players[index].hand, to=single_player)
+            
+            if index == 0: # give the turn to the first player
+                socketio.emit("give_turn",  [True, 100], to=single_player)
+            else:
+                socketio.emit("give_turn",  [False, 100], to=single_player)
+            index += 1
+        
 
 
 # route per la home page e la pagina "About"
