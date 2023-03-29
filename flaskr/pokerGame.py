@@ -37,6 +37,9 @@ class PokerGame:
     def put_table_card(self):
         self.table_cards = self.deck.pick_cards(5)
 
+    def place_bet(self, bet):
+        self.pot += bet
+    
     def place_small_blind(self):
         small_blind_player = self.players[(self.dealer_position + 1) % len(self.players)]
         small_blind_player.bet(self.minimum_bet // 2)

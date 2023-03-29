@@ -3,7 +3,7 @@ $(document).ready(function(){
     
     $("#exit_room").hide();
     $("#start_game").hide();
-    $("give_cards").hide();
+    //$("give_cards").hide();
     /**
      * function create when the user open the game page
      * It creates the socket for the communication
@@ -18,7 +18,7 @@ $(document).ready(function(){
     /**
      * after testing delete this
      */
-    socket.on("color", function(msg) {
+    /*socket.on("color", function(msg) {
         if(msg == "red"){
             console.log("test_red")
             $("#containGame").css("background-color", "red")
@@ -27,7 +27,7 @@ $(document).ready(function(){
             console.log("test_yellow")
             $("#containGame").css("background-color", "yellow")
         }
-    });
+    });*/
 
 
     /**
@@ -78,7 +78,7 @@ $(document).ready(function(){
      */
     socket.on("load_game_page", function(data) {
         $("body").load("/game_page/", function(){
-            socket.emit("give_cards", data);   //emit the request to get the cards
+            socket.emit("give_cards", localStorage.getItem("current_room"));   //emit the request to get the cards
         });
     });
     
@@ -88,7 +88,6 @@ $(document).ready(function(){
     socket.on("show_cards", function(data) {
         data[0].forEach(elem => {
             var symbol = "&clubs;"
-            console.log(elem[elem.length - 1])
             switch(elem[elem.length - 1]){
                 case "C":
                     symbol = "&clubs;"
@@ -116,7 +115,6 @@ $(document).ready(function(){
      * when the table card are getted i show them in the browser
      */
     socket.on("show_table_cards", function(data) {
-        console.log(data)
         data.forEach(elem => {
             var symbol = "&clubs;"
             console.log(elem[elem.length - 1])
@@ -145,12 +143,23 @@ $(document).ready(function(){
 
 
     /**
-     * set the turn for each player
+     * set the turn for each player after one of them do something
      */
     socket.on("give_turn", function(data) {
+        console.log("il tuo turno è");
         console.log(data);
-        localStorage.setItem("your_turn", data[0]);
-        localStorage.setItem("current_money", data[1]);
+        localStorage.setItem("is_current_turn", data);
+        console.log(typeof(localStorage.getItem("is_current_turn")));
+        //localStorage.setItem("current_money", 100);
+    });
+
+    /**
+     * set the starting turn for each player
+     */
+    socket.on("give_starting_turn", function(data) {
+        console.log("dato primo turno")
+        localStorage.setItem("is_current_turn", data[0]);
+        localStorage.setItem("current_money", 100);
     });
 
 
@@ -190,11 +199,23 @@ $(document).ready(function(){
 
 
     $("#bet").click(function() {
-        console.log("bet")
+        if(parseInt(localStorage.getItem("current_money")) >= 20 && localStorage.getItem("is_current_turn") == "true"){
+            socket.emit("bet", {"room": localStorage.getItem("current_room"), 
+        "turn": localStorage.getItem("is_current_turn"),
+        "money": localStorage.getItem("current_money")});
+        var new_money = (parseInt(localStorage.getItem("current_money")) - 20)
+        localStorage.setItem("current_money", new_money)
+        console.log(localStorage.getItem("current_money"))
+        console.log(new_money)
+        }else{
+            alert("NON PUOI SCOMMETTERE");
+        }
+        
     });
 
     $("#leave").click(function() {
-        console.log("bet")
+        socket.emit("leave_game", {"room": localStorage.getItem("current_room"), 
+        "turn": localStorage.getItem("is_current_turn")});
     });
 
 

@@ -11,6 +11,7 @@ active_rooms = {}
 active_players = {}
 poker_games = {}
 
+
 # controllo dell evento nel socket
 @socketio.on('change_color')
 def test(data):
@@ -57,7 +58,7 @@ def on_enter_existing_room(data):
     active_players[current_user.username] = current_user.username
     join_room(user_room)
     
-    active_rooms[room] += "," + username 
+    active_rooms[room] += username + "," 
     print("entered room " + room, flush=True)
     
     send(username + ' has entered the room: ' + room, to=room)
@@ -83,46 +84,70 @@ def on_start_game(data):
     number_of_players = len(active_rooms[data["room"]].split(",")) - 1
     poker_games[current_user.username] = PokerGame(number_of_players) #create the poker game for n player
     poker_games[current_user.username].start_game()
-    
-    """curr_room = current_user.username + "_room"
-    players = active_rooms[curr_room].split(",")
-    index = 0
-    print(players, flush=True)
-    
-    for single_player in players:
-        if single_player != "":
-            print("\n\n\n", flush=True)
-            print(single_player, flush=True)
-            print(rooms())
-            print("\n\n\n", flush=True)
-            #poker_games[current_user.username].players[index].hand
-            #socketio.emit("show_cards_button",current_user.username,  to=single_player)
-            break"""
         
 
 @socketio.on("give_cards") #give the cards for all users in the room
 def on_give_cards(data):
+    print(data, flush=True)
+    curr_name = data.split("_room")[0]
     
-    curr_room = current_user.username + "_room"
-    players = active_rooms[curr_room].split(",")
+    socketio.emit("show_table_cards", poker_games[curr_name].table_cards, to=current_user.username)
+    
+    player_index = active_rooms[data].split(",").index(current_user.username)  
+    print(active_rooms[data].split(","), flush=True)
+    print(active_rooms[data], flush=True)
+    socketio.emit("show_cards",  poker_games[curr_name].players[player_index].hand, to=current_user.username)
+    
+    if current_user.username == data.split("_room")[0]: # give the turn to the first player
+        socketio.emit("give_starting_turn",  [True, 100], to=current_user.username)
+    else:
+        socketio.emit("give_staring_turn",  [False, 100], to=current_user.username)
+    
+    """curr_room = current_user.username + "_room"
+    curr_name = data.split("_room")[0]
+    players = active_rooms[data].split(",")
     index = 0
-    
-    socketio.emit("show_table_cards", poker_games[current_user.username].table_cards, to=curr_room)
-    
+    socketio.emit("show_table_cards", poker_games[curr_name].table_cards, to=data)
+        
     for single_player in players:
         if single_player != "":
             print(single_player, flush=True)
             print(rooms())
             print("\n\n\n", flush=True)
-            print(poker_games[current_user.username].players[index].hand, flush=True)
-            socketio.emit("show_cards",  poker_games[current_user.username].players[index].hand, to=single_player)
+            print(poker_games[curr_name].players[index].hand, flush=True)
+            socketio.emit("show_cards",  poker_games[curr_name].players[index].hand, to=single_player)
             
             if index == 0: # give the turn to the first player
                 socketio.emit("give_turn",  [True, 100], to=single_player)
             else:
                 socketio.emit("give_turn",  [False, 100], to=single_player)
-            index += 1
+            index += 1"""
         
+
+@socketio.on("bet")
+def on_bet(data):
+    if bool(data["turn"]) == True:
+        poker_games[data["room"].split("_room")[0]].place_bet(20)
+        current_player_index = active_rooms[data["room"]].split(",").index(current_user.username)
+        number_of_players = len(active_rooms[data["room"]].split(",")) - 1
+        
+        list_of_players = active_rooms[data["room"]].split(",")
+        list_of_players.pop() # eliminate the last player beacuse its void
+        
+        next_player_index = (current_player_index + 1)%number_of_players
+        next_player = list_of_players[next_player_index]
+        
+        socketio.emit("give_turn", False, to=current_user.username)
+        socketio.emit("give_turn", True, to=next_player)
+        
+        #socketio.emit("give_starting_turn",  [False, 100], to=current_user.username)
+        #socketio.emit("give_starting_turn",  [True, 100], to=next_player)
+        
+@socketio.on("leave_game")
+def on_leave_game(data):
+    if data["turn"] == True:
+        pass
+
 
 
 # route per la home page e la pagina "About"
