@@ -17,6 +17,7 @@ class PokerGame:
         self.inactive_players = []
         self.current_player = None
         self.round_count = 0
+        self.turn_counter = 0
         
     def start_game(self):
         self.put_table_card()
@@ -39,6 +40,7 @@ class PokerGame:
 
     def place_bet(self, bet):
         self.pot += bet
+        self.turn_counter += 1
     
     def place_small_blind(self):
         small_blind_player = self.players[(self.dealer_position + 1) % len(self.players)]
@@ -82,84 +84,28 @@ class PokerGame:
 
     def burn_card(self):
         self.deck.draw_card()
-
-    def flop(self):
-        for i in range(3):
-            self.community_cards.append(self.deck.draw_card())
-
-    def turn(self):
-        self.community_cards.append(self.deck.draw_card())
-
-    def river(self):
-        self.community_cards.append(self.deck.draw_card())
-
-    def player_fold(self):
-        self.inactive_players.append(self.current_player)
-        self.active_players.remove(self.current_player)
-        self.current_player = self.get_next_player()
-
-    def player_call(self):
-        self.current_player.bet(self.current_bet - self.current_player.total_bet)
-        self.pot += self.current_player.bet_amount
-        self.current_player = self.get_next_player()
-
-    def player_raise(self):
-        amount_to_raise = self.current_player.on_player_raise()
-        if amount_to_raise < self.minimum_bet:
-            self.player_call()
-            return
-
-        total_bet = self.current_bet + amount_to_raise
-        self.current_player.bet(total_bet - self.current_player.total_bet)
-        self.pot += self.current_player.bet_amount
-        self.current_bet = total_bet
-        self.current_player = self.get_next_player()
-
-    def get_hand_score(hand):
-        """
-        Calcola lo score della mano del giocatore
-        """
-        # Estrae i valori e i semi delle carte
-        ranks = [card.rank for card in hand]
-        suits = [card.suit for card in hand]
-
-        # Conta le occorrenze dei valori delle carte
-        rank_counts = {rank: ranks.count(rank) for rank in ranks}
-
-        # Controlla se ci sono coppie, tris, ecc.
-        pair_ranks = [rank for rank, count in rank_counts.items() if count == 2]
-        three_of_a_kind_ranks = [rank for rank, count in rank_counts.items() if count == 3]
-        four_of_a_kind_ranks = [rank for rank, count in rank_counts.items() if count == 4]
-
-        # Controlla se la mano contiene una scala
-        is_straight = False
-        unique_ranks = list(set(ranks))
-        unique_ranks.sort()
-        if len(unique_ranks) == 5 and (unique_ranks[-1] - unique_ranks[0] == 4):
-            is_straight = True
-
-        # Controlla se la mano contiene un colore
-        is_flush = len(set(suits)) == 1
-
-        # Controlla se la mano contiene una scala reale
-        is_straight_flush = is_straight and is_flush and (ranks[0] == "10")
-
-        # Calcola lo score della mano in base ai criteri sopra descritti
-        if is_straight_flush:
-            return 9
-        elif four_of_a_kind_ranks:
-            return 8
-        elif three_of_a_kind_ranks and pair_ranks:
-            return 7
-        elif is_flush:
-            return 6
-        elif is_straight:
-            return 5
-        elif three_of_a_kind_ranks:
-            return 4
-        elif len(pair_ranks) == 2:
-            return 3
-        elif pair_ranks:
-            return 2
-        else:
-            return 1
+        
+    def check_winner(self):
+        card_count = {"D": 0, "S": 0, "H":0, "C":0}
+        for card in self.table_cards:
+            card_count[card[len(card) - 1]] += 1
+        
+        
+        winner_symbol = max(card_count, key=card_count.get)
+        print(winner_symbol, flush=True)
+        print("\n\n\n", flush=True)
+        
+        player_cards = [{"D": 0, "S": 0, "H":0, "C":0} for i in range(len(self.players))]
+        print(player_cards, flush=True)
+        player_symbol = []
+        player_index = 0
+        for single_player in self.players:
+            for card in single_player.hand:
+                player_symbol = card[len(card) - 1]
+                player_cards[player_index][player_symbol] += 1
+            player_symbol.append(max(player_cards[player_index], key=player_cards[player_index].get))
+            player_index += 1
+        
+        print(player_symbol, flush=True)
+    
+        

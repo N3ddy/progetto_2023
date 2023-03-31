@@ -140,6 +140,10 @@ def on_bet(data):
         socketio.emit("give_turn", False, to=current_user.username)
         socketio.emit("give_turn", True, to=next_player)
         
+        
+        """if poker_games[data["room"].split("_room")[0]].turn_counter:
+            poker_games[data["room"].split("_room")[0]].han"""
+        
         #socketio.emit("give_starting_turn",  [False, 100], to=current_user.username)
         #socketio.emit("give_starting_turn",  [True, 100], to=next_player)
         
